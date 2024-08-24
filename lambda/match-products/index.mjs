@@ -4,12 +4,49 @@ import fetch from 'node-fetch';
 
 const secretsManager = new SecretsManagerClient({ region: 'eu-west-2' });
 
-async function getSecrets() {
-    const command = new GetSecretValueCommand({ SecretId: 'InfraspeakApp/Production/ApiCredentials' });
-    const response = await secretsManager.send(command);
-    return JSON.parse(response.SecretString);
-};
+const codes = {
+    API_KEY_INFRASPEAK : "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyNjMiLCJqdGkiOiJlMTJlYzAwOGVkNzk4NDk2OTEyOWI3OTQwMTExYjM3NjYwYzBmODhhNDY4ZjY1ZmYwZGRkYWQwOTYyZjZlZGNmYjU2YmRkOGVlNWFkOTc3YyIsImlhdCI6MTcyMDcxMzQ1MSwibmJmIjoxNzIwNzEzNDUxLCJleHAiOjIwMzYyNDYyNTEsInN1YiI6IjYzMzMiLCJzY29wZXMiOltdLCJ1dHlwZSI6Ik9QRVJBVE9SIiwidXR5cGVfaWQiOjQ5MDEsIm5hbWUiOiJTUExLIEludGVncmF0aW9uIHVzZXIiLCJlbWFpbCI6InNwbGsuc2FuZGJveEBpbmZyYXNwZWFrLmNvbSIsInpvbmVpbmZvIjoiRXVyb3BlL0xvbmRvbiJ9.y4zcSfuTX9SQwlEXzxcu8q6SXCwx7ExTXXq8DHPpohiO-phPN62J6SoEsG_CnsiT6qZ61Zy7eM84GUkdAxl-ZFZyzWIA_EPRHsbc5dZyQNawu8r6rw09sxsG_xbz-1WYvLHfyqcOKAa6gg5w5KqT0zGQILCDBH1LQqAgqtB5xtFIM8eP4tU0D8HucLgKXIP1Kb_-5wnix2tV5mcHpoMWqQCo0fkIOnYqIAdmedUh0QUlL5yWYG3fvza-HkMYfCDNHAn1t7q1nuPKt6HzcaoCOgWs-qYnhU1O_7pVHGjPV2XjRSPGAGFl3Mxo2I4sNAXXdu0huM0mj7VJOcqBnwj7yt-fT4KIbbeZrJCgzkslyQKuJOhg68UhVFsxZ1Zwub-V5jnx4a-sAM8Zjs3NJnniaW9fI8oGrG-nwZZErD4hxasdhf_NfNVkJOHqm2EDB7Vv9X9xepl0jiFLD4VPUh1HngRtQyVjRFxtNo0zacDsUhUymEbC8LKul0FPk-B2MybHYMqbOWednRkh4XbF66jIlLytGVR2QyR4SUN01Ok8h70MRz0DU8IZteZt-qAX_FsRAJZp4rf9XzpvCAqpELq7uO5A3-zLx7T0GYoq6y_h1wMAHe19k_UAOBNhCTjtq2BqbrxXIWDxu1arSVI_oBWZGIP6THbvMV-EXJ_Axty6YcM",
+    API_ID : "4702fb74-32dc-43fc-8813-5f396b716360",
+    API_KEY : "c7BBgAn9L2G5nWmErEyUpX82zIQ09a2ft9d5f5hYsdKPzQ6YSD4HHiEfEMbguS5CUJ9D3fNcesSfqDrT46KQ=="
+}
 
+// async function getSecrets() {
+//     const command = new GetSecretValueCommand({ SecretId: 'InfraspeakApp/Production/ApiCredentials' });
+//     const response = await secretsManager.send(command);
+//     return JSON.parse(response.SecretString);
+// };
+
+// async function getSecrets() {
+//     console.log('Running locally with environment variables:');
+//     console.log('API_KEY_INFRASPEAK:', process.env.API_KEY_INFRASPEAK);
+//     console.log('API_ID:', process.env.API_ID);
+//     console.log('API_KEY:', process.env.API_KEY);
+//     return {
+//         API_KEY_INFRASPEAK: process.env.API_KEY_INFRASPEAK,
+//         API_ID: process.env.API_ID,
+//         API_KEY: process.env.API_KEY
+//     }
+// }
+
+async function getSecrets() {
+    //console.log('All environment variables:', process.env);
+    if (process.env.AWS_SAM_LOCAL) {
+        console.log('API_KEY_INFRASPEAK:', process.env.API_KEY_INFRASPEAK);
+        console.log('API_ID:', process.env.API_ID);
+        console.log('API_KEY:', process.env.API_KEY);
+        // Running locally
+        return {
+            API_KEY_INFRASPEAK: process.env.API_KEY_INFRASPEAK,
+            API_ID: process.env.API_ID,
+            API_KEY: process.env.API_KEY
+        };
+    } else {
+        // Running in AWS
+        const command = new GetSecretValueCommand({ SecretId: 'InfraspeakApp/Production/ApiCredentials' });
+        const response = await secretsManager.send(command);
+        return JSON.parse(response.SecretString);
+    }
+};
 
 export const handler = async (event) => {
     try {
@@ -124,6 +161,7 @@ const fetchProductsInfraspeak = async (pageNumber = 1) => {
 
 const fetchProductsUnleashed = async (pageNumber = 1) => {
     const { API_ID, API_KEY } = await getSecrets();
+    console.log(API_ID, " and ", API_KEY)
     const url = `https://api.unleashedsoftware.com/Products/Page/${pageNumber}`;
     const urlParam = "";
     const apiSignature = generateSignature(urlParam, API_KEY);

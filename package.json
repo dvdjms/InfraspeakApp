@@ -5,7 +5,7 @@
     "cdk-infraspeak": "bin/cdk-infraspeak.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "node build.js",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk"
@@ -22,6 +22,7 @@
   "dependencies": {
     "aws-cdk-lib": "2.151.0",
     "constructs": "^10.0.0",
+    "esbuild": "^0.12.17",
     "source-map-support": "^0.5.21"
   }
 }

@@ -15,11 +15,13 @@ export class CdkInfraspeakStack extends cdk.Stack {
     // Retrieve the secret
     const secretKeyCredentials = secretsmanager.Secret.fromSecretNameV2(this, 'ApiCredentials', 'InfraspeakApp/Production/ApiCredentials');
 
-    // Function to fetch Jira data and populate DynamoDB
+    //Function to fetch Jira data and populate DynamoDB
     const matchProducts = new NodejsFunction(this, 'match-products', {
+    //const matchProducts = new lambda.Function(this, 'match-products', {
         runtime: lambda.Runtime.NODEJS_20_X,
         handler: 'index.handler',
-        code: lambda.Code.fromAsset(path.join(__dirname, '../../lambda/match-products')),
+        //code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/match-products')),
+        entry: path.join(__dirname, '../lambda/match-products/index.mjs'),
         timeout: cdk.Duration.seconds(200),
     });
 
